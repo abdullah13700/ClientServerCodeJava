@@ -1,0 +1,109 @@
+
+// Getting the wanted libraries and package
+package com.journaldev.socket;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+    public static void main(String[] args) throws IOException {
+        // Initialize socket, input stream and the buffers
+        Socket socket = null;
+        InputStreamReader inputStreamReader = null;
+        OutputStreamWriter outputStreamWriter = null;
+        BufferedReader bufferedReader = null;
+        BufferedWriter bufferedWriter = null;
+
+        ServerSocket ServerSocket = new ServerSocket(1234);
+        System.out.println("Server started");
+        System.out.println("Server started on port: " + ServerSocket.getLocalPort());
+        System.out.println("Waiting for a client ...");
+        while (true) {
+            // Starts server and waits for a connection
+            try {
+                // Accepting the client
+                socket = ServerSocket.accept();
+                System.out.print("Client accepted, ");
+                System.out.println("Client IP: " + socket.getInetAddress().getHostAddress());
+                // Getting the input and ouput streams
+                inputStreamReader = new InputStreamReader(socket.getInputStream());
+                outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+                // Getting the reader and writer buffers
+                bufferedReader = new BufferedReader(inputStreamReader);
+                bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+                while (true) {
+                    // Getting the message from the client
+                    String MsgFromClient = bufferedReader.readLine();
+                    // Printing the client message
+                    System.out.println("Client message: " + MsgFromClient);
+                    // Echoing the message to the client
+                    bufferedWriter.write(MsgFromClient);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                    // If the client sends "Secure" the server will enter the secure mode
+                    if (MsgFromClient.equalsIgnoreCase("Secure")) {
+                        System.out.println("The server entered the secure mode");
+                        String MsgFrom = bufferedReader.readLine();
+                        System.out.println("Client message: " + MsgFrom);
+                        // Encrypting the message with the CaesarCipher encryption
+                        StringBuffer EncrMsg = encrypt(MsgFrom, 4);
+                        // Sending the encrypted message to the client
+                        String Msg = EncrMsg.toString();
+                        bufferedWriter.write(Msg);
+                        bufferedWriter.newLine();
+                        bufferedWriter.flush();
+                        System.out.println("The server Encrypted the message and send it to the client");
+                        System.out.println("The message before the Encryption: " + " ( " + MsgFrom + " ) "
+                                + " After the Encryption: " + " ( " + Msg + " ) ");
+
+                    }
+                    // If the client sends "Exit" the server will shut down
+                    if (MsgFromClient.equalsIgnoreCase("Exit")) {
+                        System.out.println("the client disconnected ");
+                        // Closing the socket, streams and buffers
+                        socket.close();
+                        inputStreamReader.close();
+                        outputStreamWriter.close();
+                        bufferedReader.close();
+                        bufferedWriter.close();
+                        ServerSocket.close();
+
+                        break;
+                    }
+
+                }
+                // Catch for any IOexception
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
+            return;
+        }
+
+    }
+
+    // the CaesarCipher Encryption method
+    public static StringBuffer encrypt(String text, int s) {
+        StringBuffer result = new StringBuffer();
+
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isUpperCase(text.charAt(i))) {
+                char ch = (char) (((int) text.charAt(i) +
+                        s - 65) % 26 + 65);
+                result.append(ch);
+            } else {
+                char ch = (char) (((int) text.charAt(i) +
+                        s - 97) % 26 + 97);
+                result.append(ch);
+            }
+        }
+        return result;
+    }
+
+}

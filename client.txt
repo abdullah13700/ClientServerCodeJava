@@ -1,0 +1,87 @@
+
+// Getting the wanted libraries and package
+package com.journaldev.socket;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.util.Scanner;
+
+public class Client {
+    public static void main(String[] args) {
+
+        // initialize socket, input stream and the buffers
+        Socket socket = null;
+        InputStreamReader inputStreamReader = null;
+        OutputStreamWriter outputStreamWriter = null;
+        BufferedReader bufferedReader = null;
+        BufferedWriter bufferedWriter = null;
+
+        try {
+            // Taking the ip and port number to the server
+            socket = new Socket("192.168.100.69", 1234);
+            System.out.println("Connected");
+            // Getting the input and ouput streams
+            inputStreamReader = new InputStreamReader(socket.getInputStream());
+            outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+            // Getting the reader and writer buffers
+            bufferedReader = new BufferedReader(inputStreamReader);
+            bufferedWriter = new BufferedWriter(outputStreamWriter);
+            // If the client wants the secuere mode he enters secure
+            System.out.println("Type Secure to enter the Secure mode ");
+            // The client enters his massege
+            System.out.println("Enter your message: ");
+
+            Scanner scanner = new Scanner(System.in);
+
+            while (true) {
+                // Getting the message from the client
+                String MsgToSend = scanner.nextLine();
+                // Sending the message to the server
+                bufferedWriter.write(MsgToSend);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+                // the Echoing from the server
+                System.out.println("Server: " + bufferedReader.readLine());
+                // If the client inputs secure the message
+                // "You enterd the secure mode" will appear
+                if (MsgToSend.equalsIgnoreCase("Secure")) {
+                    System.out.println("You enterd the secure mode");
+                    System.out.println("Enter your message to be Encrypted: ");
+                }
+                // If the client inputs "Exit" the program will break
+                if (MsgToSend.equalsIgnoreCase("Exit")) {
+                    System.out.println("the server disconnected");
+
+                    break;
+                }
+
+            }
+        }
+        // Cathing any IO Exception
+        catch (IOException e) {
+            e.printStackTrace();
+
+            // Closing all of the socket, streamers and buffers
+        } finally {
+            try {
+                if (socket != null)
+                    socket.close();
+                if (inputStreamReader != null)
+                    inputStreamReader.close();
+                if (outputStreamWriter != null)
+                    outputStreamWriter.close();
+                if (bufferedReader != null)
+                    bufferedReader.close();
+                if (bufferedWriter != null)
+                    bufferedWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+}
